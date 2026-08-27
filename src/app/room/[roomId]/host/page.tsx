@@ -2,13 +2,12 @@
 
 import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import {Room, Track, LocalTrackPublication, ConnectionState} from 'livekit-client';
+import { Room, Track, ConnectionState, LocalTrackPublication } from 'livekit-client';
 
 export default function HostPage() {
     const { roomId } = useParams<{ roomId: string }>();
     const videoRef = useRef<HTMLVideoElement>(null);
     const roomRef = useRef<Room | null>(null);
-    const publicationsRef = useRef<LocalTrackPublication[]>([]);
 
     const [status, setStatus] = useState('Conectando...');
     const [shareUrl, setShareUrl] = useState('');
@@ -56,54 +55,48 @@ export default function HostPage() {
         }
 
         try {
-            let mediaStream: MediaStream;
+            // Tenta transmitir vídeo + áudio
             try {
-                mediaStream = await navigator.mediaDevices.getDisplayMedia({
-                    video: true,
+                await room.localParticipant.setScreenShareEnabled(true, {
                     audio: true,
+                    selfBrowserSurface: 'include',
                 });
-            } catch (err: any) {
-                if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
-                    console.warn('Áudio do sistema indisponível. Iniciando apenas vídeo...');
-                    mediaStream = await navigator.mediaDevices.getDisplayMedia({
-                        video: true,
+            } catch (audioErr: any) {
+                // Se falhar a captura de áudio da tela inteira, faz fallback para apenas vídeo
+                if (audioErr.name === 'NotReadableError' || audioErr.name === 'TrackStartError') {
+                    console.warn('Áudio do sistema indisponível para esta janela/tela. Transmitindo apenas vídeo...');
+                    await room.localParticipant.setScreenShareEnabled(true, {
                         audio: false,
+                        selfBrowserSurface: 'include',
                     });
+                    setStatus('Transmitindo sem áudio (dica: para som, compartilhe uma Guia do Chrome)');
                 } else {
-                    throw err;
+                    throw audioErr;
                 }
             }
 
-            const videoTrack = mediaStream.getVideoTracks()[0];
-            if (videoTrack) {
-                const videoPub = await room.localParticipant.publishTrack(videoTrack, {
-                    source: Track.Source.ScreenShare,
-                });
-                publicationsRef.current.push(videoPub);
+            const screenPub = Array.from(room.localParticipant.trackPublications.values()).find(
+                (pub) => pub.source === Track.Source.ScreenShare
+            );
 
-                videoTrack.addEventListener('ended', () => {
-                    handleStopSharing();
-                });
+            if (screenPub && screenPub.track && videoRef.current) {
+                screenPub.track.attach(videoRef.current);
             }
 
-            const audioTrack = mediaStream.getAudioTracks()[0];
-            if (audioTrack) {
-                try {
-                    const audioPub = await room.localParticipant.publishTrack(audioTrack, {
-                        source: Track.Source.ScreenShareAudio,
-                    });
-                    publicationsRef.current.push(audioPub);
-                } catch (audioErr) {
-                    console.warn('Não foi possível publicar o áudio:', audioErr);
+            const onLocalTrackUnpublished = (publication: LocalTrackPublication) => {
+                if (publication.source === Track.Source.ScreenShare) {
+                    setIsSharing(false);
+                    setStatus('Compartilhamento encerrado');
+                    room.localParticipant.off('localTrackUnpublished', onLocalTrackUnpublished);
                 }
-            }
+            };
 
-            if (videoRef.current) {
-                videoRef.current.srcObject = mediaStream;
-            }
+            room.localParticipant.on('localTrackUnpublished', onLocalTrackUnpublished);
 
             setIsSharing(true);
-            setStatus('Transmitindo ao vivo!');
+            if (!status.includes('sem áudio')) {
+                setStatus('Transmitindo ao vivo!');
+            }
         } catch (err: any) {
             if (err.name === 'NotAllowedError') {
                 setStatus('Compartilhamento de tela cancelado por você.');
@@ -114,25 +107,23 @@ export default function HostPage() {
         }
     }
 
-    function handleStopSharing() {
+    async function handleStopSharing() {
         const room = roomRef.current;
         if (!room) return;
 
-        publicationsRef.current.forEach((pub) => {
-            const track = pub.track;
-            if (track) {
-                room.localParticipant.unpublishTrack(track);
-                track.stop();
+        try {
+            // Desativa a tela e limpa os elementos
+            await room.localParticipant.setScreenShareEnabled(false);
+
+            if (videoRef.current) {
+                videoRef.current.srcObject = null;
             }
-        });
-        publicationsRef.current = [];
 
-        if (videoRef.current) {
-            videoRef.current.srcObject = null;
+            setIsSharing(false);
+            setStatus('Compartilhamento encerrado');
+        } catch (err: any) {
+            console.error('Erro ao parar compartilhamento:', err);
         }
-
-        setIsSharing(false);
-        setStatus('Compartilhamento encerrado');
     }
 
     function copyLink() {
@@ -159,7 +150,7 @@ export default function HostPage() {
                     </div>
                 </div>
 
-                {/* Área do Link de Compartilhamento */}
+                {/* Área do Link */}
                 {shareUrl && (
                     <div className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl flex flex-col sm:flex-row items-center gap-3">
                         <span className="text-sm text-zinc-400 whitespace-nowrap">Link dos Espectadores:</span>
