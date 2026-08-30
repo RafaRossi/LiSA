@@ -29,7 +29,6 @@ export default function WatchPage() {
 
             const room = new Room();
 
-            // Detecta se o navegador bloqueou o áudio automático
             room.on(RoomEvent.AudioPlaybackStatusChanged, () => {
                 if (!room.canPlaybackAudio) {
                     setNeedAudioPermission(true);
@@ -71,7 +70,7 @@ export default function WatchPage() {
 
             roomRef.current = room;
             setIsConnected(true);
-            setStatus('Aguardando o host transmitir...');
+            setStatus('Aguardando transmissão...');
         }
 
         joinRoom().catch((err) => {
@@ -91,7 +90,6 @@ export default function WatchPage() {
         };
     }, [roomId]);
 
-    // Libera o áudio travado pelo navegador após clique do usuário
     async function handleEnableAudio() {
         if (roomRef.current) {
             await roomRef.current.startAudio();
@@ -148,7 +146,7 @@ export default function WatchPage() {
         <main className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col items-center justify-center p-4">
             <audio ref={audioRef} autoPlay />
 
-            <div className="max-w-5xl w-full flex flex-col gap-4">
+            <div className="max-w-7xl w-full flex flex-col gap-4">
                 <div className="flex justify-between items-center px-2">
                     <h1 className="text-lg font-bold">Assistindo Transmissão</h1>
                     <div className="flex items-center gap-2">
@@ -159,11 +157,10 @@ export default function WatchPage() {
 
                 <div
                     ref={containerRef}
-                    className="relative group w-full aspect-video bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden shadow-2xl flex items-center justify-center"
+                    className="relative group w-full  bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden shadow-xl flex items-center justify-center"
                 >
                     <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-contain" />
 
-                    {/* Botão de aviso para liberar Autoplay do áudio se o navegador bloquear */}
                     {needAudioPermission && (
                         <button
                             onClick={handleEnableAudio}
@@ -173,8 +170,7 @@ export default function WatchPage() {
                         </button>
                     )}
 
-                    {/* Overlay de Controles */}
-                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-between z-10">
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-linear-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-between z-10">
                         <div className="flex items-center gap-3 bg-zinc-900/80 px-3 py-2 rounded-xl border border-zinc-700/50 backdrop-blur-md">
                             <button
                                 onClick={toggleMute}

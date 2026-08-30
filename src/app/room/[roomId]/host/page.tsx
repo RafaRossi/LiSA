@@ -14,6 +14,8 @@ export default function HostPage() {
     const [isSharing, setIsSharing] = useState(false);
     const [copied, setCopied] = useState(false);
 
+    const [userDisplayName, setUserDisplayName] = useState('');
+
     useEffect(() => {
         let isMounted = true;
 
@@ -55,7 +57,6 @@ export default function HostPage() {
         }
 
         try {
-            // Tenta transmitir vídeo + áudio
             try {
                 await room.localParticipant.setScreenShareEnabled(true, {
                     audio: true,
@@ -112,7 +113,6 @@ export default function HostPage() {
         if (!room) return;
 
         try {
-            // Desativa a tela e limpa os elementos
             await room.localParticipant.setScreenShareEnabled(false);
 
             if (videoRef.current) {
@@ -150,7 +150,6 @@ export default function HostPage() {
                     </div>
                 </div>
 
-                {/* Área do Link */}
                 {shareUrl && (
                     <div className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl flex flex-col sm:flex-row items-center gap-3">
                         <span className="text-sm text-zinc-400 whitespace-nowrap">Link dos Espectadores:</span>
