@@ -63,7 +63,6 @@ export default function HostPage() {
                     selfBrowserSurface: 'include',
                 });
             } catch (audioErr: any) {
-                // Se falhar a captura de áudio da tela inteira, faz fallback para apenas vídeo
                 if (audioErr.name === 'NotReadableError' || audioErr.name === 'TrackStartError') {
                     console.warn('Áudio do sistema indisponível para esta janela/tela. Transmitindo apenas vídeo...');
                     await room.localParticipant.setScreenShareEnabled(true, {

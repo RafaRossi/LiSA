@@ -45,7 +45,6 @@ export default function WatchPage() {
                     audioRef.current.volume = volume;
                     audioRef.current.muted = isMuted;
 
-                    // Tenta iniciar a reprodução do áudio e captura bloqueio de autoplay
                     if (!room.canPlaybackAudio) {
                         setNeedAudioPermission(true);
                     }
