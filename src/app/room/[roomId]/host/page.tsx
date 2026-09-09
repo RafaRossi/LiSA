@@ -1,8 +1,9 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import {useParams, useRouter} from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { Room, Track, ConnectionState, LocalTrackPublication } from 'livekit-client';
+import {Button} from "@/app/components/home/Button";
 
 export default function HostPage() {
     const { roomId } = useParams<{ roomId: string }>();
@@ -15,6 +16,8 @@ export default function HostPage() {
     const [copied, setCopied] = useState(false);
 
     const [userDisplayName, setUserDisplayName] = useState('');
+
+    const router = useRouter();
 
     useEffect(() => {
         let isMounted = true;
@@ -125,6 +128,25 @@ export default function HostPage() {
         }
     }
 
+    async function handleCloseRoom(){
+        const room = roomRef.current;
+
+        try{
+            await fetch('/api/close-room', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ roomCode: roomId }),
+            });
+        }
+        catch (err) {
+            console.error("Erro ao encerrar a sala", err);
+        }
+        finally {
+            await room?.disconnect();
+            router.push('/')
+        }
+    }
+
     function copyLink() {
         if (!shareUrl) return;
         navigator.clipboard.writeText(shareUrl);
@@ -136,7 +158,6 @@ export default function HostPage() {
         <main className="min-h-screen bg-zinc-950 text-zinc-100 p-6 flex flex-col items-center">
             <div className="max-w-4xl w-full flex flex-col gap-6">
 
-                {/* Header com Status */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-zinc-900 border border-zinc-800 rounded-xl gap-4">
                     <div>
                         <h1 className="text-xl font-bold">Painel do Host</h1>
@@ -172,12 +193,20 @@ export default function HostPage() {
                 <div className="flex flex-col gap-4">
                     <div>
                         {!isSharing ? (
-                            <button
-                                onClick={handleStartSharing}
-                                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 font-semibold rounded-lg text-sm transition-all shadow-lg shadow-indigo-600/20 cursor-pointer"
-                            >
-                                Compartilhar tela
-                            </button>
+                            <div className="flex flex-col sm:flex-row items-start gap-30 ">
+                                <Button
+                                    onClick={handleStartSharing}
+                                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 font-semibold rounded-lg text-sm transition-all shadow-lg shadow-indigo-600/20 cursor-pointer"
+                                >
+                                    Iniciar Transmissão
+                                </Button>
+                                <Button
+                                    onClick={handleCloseRoom}
+                                    className="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 font-semibold rounded-lg text-sm transition-all shadow-lg shadow-indigo-600/20 cursor-pointer"
+                                >
+                                    Fechar Sala
+                                </Button>
+                            </div>
                         ) : (
                             <button
                                 onClick={handleStopSharing}

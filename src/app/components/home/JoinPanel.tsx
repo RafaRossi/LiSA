@@ -16,6 +16,7 @@ interface JoinPanelProps {
 export function JoinPanel({ code, setCode, isLoading, error, onSubmit, onBack }: JoinPanelProps) {
     return (
         <div className="w-full flex flex-col gap-2 px-1">
+            <h1 className="text-2xl font-extrabold tracking-tight">LiSA</h1>
             <p className="text-sm">Digite o código da sala</p>
             <InputField
                 variant="code"

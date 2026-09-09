@@ -77,55 +77,48 @@ export default function Home() {
 
   return (
       <main className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col items-center justify-center relative overflow-hidden p-4">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-128 h-64 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-lg h-64 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 max-w-lg w-full bg-zinc-900/80 border border-zinc-800 p-8 pb-4 rounded-3xl shadow-2xl backdrop-blur-md text-center flex flex-col gap-6">
-          <div className="space-y-4">
-            <h1 className="text-4xl font-extrabold tracking-tight">LiSA</h1>
-            <p className="text-zinc-400 text-md">
-              Compartilhe sua tela instantaneamente sem complicações.
-            </p>
-          </div>
-
-          <div className="relative w-full overflow-hidden duration-500 ease-in-out">
-            <div
-                className="flex w-full transition-transform duration-500 ease-in-out items-center"
-                style={{
-                  transform: showDetail ? 'translateX(-50%)' : 'translateX(0%)',
-                  width: '200%',
-                }}
-            >
-              <div style={{ flex: '0 0 50%' }}>
-                <MenuPanel
-                    onCreate={() => openDetail('create')}
-                    onJoin={() => openDetail('join')}
-                />
-              </div>
-              <div style={{ flex: '0 0 50%' }}>
-                {detailPanel === 'join' ? (
-                    <JoinPanel
-                        active={showDetail}
-                        code={code}
-                        setCode={setCode}
-                        error={error}
-                        isLoading={isLoading}
-                        onSubmit={handleJoinByCode}
-                        onBack={backToMenu}
-                    />
-                ) : (
-                    <CreatePanel
-                        active={showDetail}
-                        roomName={roomName}
-                        error={error}
-                        isLoading={isLoading}
-                        setRoomName={setRoomName}
-                        onSubmit={handleStartHosting}
-                        onBack={backToMenu}
-                    />
-                )}
-              </div>
+            <div className="relative w-full overflow-hidden" style={{ minHeight: '220px' }}>
+                <div
+                    className="flex w-full h-full items-center transition-transform duration-500 ease-in-out"
+                    style={{
+                        transform: showDetail ? 'translateX(-50%)' : 'translateX(0%)',
+                        width: '200%',
+                    }}
+                >
+                    <div style={{ flex: '0 0 50%' }} className="flex items-center justify-center h-full">
+                        <MenuPanel
+                            onCreate={() => openDetail('create')}
+                            onJoin={() => openDetail('join')}
+                        />
+                    </div>
+                    <div style={{ flex: '0 0 50%' }} className="flex items-center justify-center h-full">
+                        {detailPanel === 'join' ? (
+                            <JoinPanel
+                                active={showDetail}
+                                code={code}
+                                setCode={setCode}
+                                error={error}
+                                isLoading={isLoading}
+                                onSubmit={handleJoinByCode}
+                                onBack={backToMenu}
+                            />
+                        ) : (
+                            <CreatePanel
+                                active={showDetail}
+                                roomName={roomName}
+                                error={error}
+                                isLoading={isLoading}
+                                setRoomName={setRoomName}
+                                onSubmit={handleStartHosting}
+                                onBack={backToMenu}
+                            />
+                        )}
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
       </main>
   );

@@ -16,6 +16,7 @@ interface CreatePanelProps {
 export function CreatePanel({ roomName, setRoomName, isLoading, error, onSubmit, onBack }: CreatePanelProps) {
     return (
         <div className="w-full flex flex-col gap-3 px-1">
+            <h1 className="text-2xl font-extrabold tracking-tight">LiSA</h1>
             <InputField
                 variant="text"
                 value={roomName}

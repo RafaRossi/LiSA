@@ -1,8 +1,8 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import {useParams, useRouter} from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { Room, RoomEvent, Track } from 'livekit-client';
+import {DisconnectReason, Room, RoomEvent, Track} from 'livekit-client';
 
 export default function WatchPage() {
     const { roomId } = useParams<{ roomId: string }>();
@@ -18,6 +18,8 @@ export default function WatchPage() {
 
     const [volume, setVolume] = useState(1);
     const [isMuted, setIsMuted] = useState(false);
+
+    const router = useRouter();
 
     useEffect(() => {
         let isMounted = true;
@@ -55,9 +57,18 @@ export default function WatchPage() {
                 track.detach();
             });
 
-            room.on(RoomEvent.Disconnected, () => {
-                setStatus('A transmissão foi encerrada.');
+            room.on(RoomEvent.Disconnected, (reason) => {
                 setIsConnected(false);
+
+                if (reason === DisconnectReason.ROOM_DELETED) {
+                    setStatus('O host encerrou a transmissão.');
+                } else {
+                    setStatus('Conexão perdida.');
+                }
+
+                setTimeout(() => {
+                    router.push('/');
+                }, 2500);
             });
 
             await room.connect(process.env.NEXT_PUBLIC_LIVEKIT_URL!, token);
@@ -112,6 +123,11 @@ export default function WatchPage() {
         }
     }
 
+    async function handleLeave(){
+        await roomRef?.current?.disconnect();
+        router?.push('/');
+    }
+
     function toggleMute() {
         if (!audioRef.current) return;
 
@@ -152,6 +168,9 @@ export default function WatchPage() {
                         <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                         <span className="text-xs text-zinc-400">{status}</span>
                     </div>
+                    <button onClick={handleLeave} className="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 font-semibold rounded-lg text-sm transition-all shadow-lg shadow-indigo-600/20 cursor-pointer">
+                        Sair da Sala
+                    </button>
                 </div>
 
                 <div

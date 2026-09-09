@@ -8,6 +8,12 @@ interface MenuPanelProps {
 export function MenuPanel({onCreate, onJoin}: MenuPanelProps) {
     return (
         <div className="w-full flex flex-col px-1">
+            <div className="space-y-3 mb-8">
+                <h1 className="text-4xl font-extrabold tracking-tight">LiSA</h1>
+                <p className="text-zinc-400 text-md">
+                    Compartilhe sua tela instantaneamente sem complicações.
+                </p>
+            </div>
             <Button variant="primary" onClick={onCreate}>
                 Iniciar Transmissão
             </Button>
